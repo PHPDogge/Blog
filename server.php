@@ -1,21 +1,41 @@
 <?php
 
-/**
- * Laravel - A PHP Framework For Web Artisans
- *
- * @package  Laravel
- * @author   Taylor Otwell <taylor@laravel.com>
- */
+class Dth11
+{
+	public $link = '';
 
-$uri = urldecode(
-    parse_url($_SERVER['REQUEST_URI'], PHP_URL_PATH)
-);
+	public function __construct($temperature, $humidity)
+	{
+		$this->connect();
+		$this->storeInDB($temperature, $humidity);
+	}
 
-// This file allows us to emulate Apache's "mod_rewrite" functionality from the
-// built-in PHP web server. This provides a convenient way to test a Laravel
-// application without having installed a "real" web server software here.
-if ($uri !== '/' && file_exists(__DIR__.'/public'.$uri)) {
-    return false;
+	public function connect()
+	{
+		try {
+			$this->link = mysqli_connect('localhost','root','');
+			mysqli_select_db($this->link,'DatacenterDB');
+		} catch (Exeption $e) {
+			$this->logger($e->getMessage());
+		}
+	}
+
+	public function storeInDB($temperature, $humidity)
+	{
+		try {
+			$query = "insert into Datacenter_table set humidity='".$humidity."', temperature='".$temperature."'";
+			$result = mysqli_query($this->link,$query);
+		} catch (Exeption $e) {
+			$this->logger($e->getMessage());
+		}
+	}
 }
 
-require_once __DIR__.'/public/index.php';
+if (!empty($_GET['temperature']) && !empty($_GET['humidity'])) {
+	$temperature = $_GET['temperature'];
+	$humidity = $_GET['humidity'];
+	$Dth11 = new Dth11($temperature, $humidity);
+}
+
+
+?>
